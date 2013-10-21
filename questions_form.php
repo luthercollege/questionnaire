@@ -322,6 +322,12 @@ class questionnaire_questions_form extends moodleform {
                     $mform->addElement('html', '<div class="qn-container">'); // Begin div qn-container.
                 }
             }
+            
+            // courseeval start
+            $qnoneditable = $question->noneditable;
+            $qnoneditable = ($qnoneditable == 'y') ? $stryes : $strno;
+            $manageqgroup[] =& $mform->createElement('static', 'qnoneditable_'.$question->id, '', '<div class="qnonedit">'.$qnoneditable.'</div>'); // courseeval end
+            
             $mform->addGroup($manageqgroup, 'manageqgroup', '', '&nbsp;', false);
             if ($tid != QUESPAGEBREAK) {
                 $mform->addElement('static', 'qcontent_'.$question->id, '',
