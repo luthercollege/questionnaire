@@ -376,8 +376,11 @@ if ($action == 'main') {
             $qformdata->content = file_save_draft_area_files($qformdata->itemid, $context->id, 'mod_questionnaire', 'question',
                                                              $qformdata->qid, array('subdirs'=>true), $qformdata->content);
 
-            $fields = array('name', 'type_id', 'length', 'precise', 'required', 'content', 'dependquestion', 'dependchoice');
-            $questionrecord = new Object();
+
+            // courseeval start
+            $fields = array('name','type_id','length','precise','required','noneditable','content'); // courseeval end
+
+            $questionrecord = new stdClass();
             $questionrecord->id = $qformdata->qid;
             foreach ($fields as $f) {
                 if (isset($qformdata->$f)) {
