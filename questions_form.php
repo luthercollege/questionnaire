@@ -34,6 +34,9 @@ class questionnaire_questions_form extends moodleform {
         global $CFG, $questionnaire, $SESSION, $OUTPUT;
         global $DB;
 
+        // courseeval start
+        global $USER; // courseeval end
+
         $sid = $questionnaire->survey->id;
         $mform    =& $this->_form;
 
