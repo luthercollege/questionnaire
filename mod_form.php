@@ -30,17 +30,31 @@ class mod_questionnaire_mod_form extends moodleform_mod {
 
     protected function definition() {
         global $COURSE;
-
+        global $USER; // coureseval end
+        
         $questionnaire = new questionnaire($this->_instance, null, $COURSE, $this->_cm);
 
         $mform    =& $this->_form;
 
+        // Courseeval
+        global $QUESTIONNAIRE_TYPES, $QUESTIONNAIRE_RESPONDENTS, $QUESTIONNAIRE_ELIGIBLES,
+        $QUESTIONNAIRE_RESPONSEVIEWERS, $QUESTIONNAIRE_REALMS;
+        // Courseeval added to check out if courseeval type
+        if (!empty($questionnaire->qtype)) {
+            $qtype = $questionnaire->qtype;
+        } // Courseeval end
+
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('name', 'questionnaire'), array('size'=>'64'));
-        $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', null, 'required', null, 'client');
-
+        // Courseeval added to check out if courseeval type
+        if (empty($qtype) || $qtype <> QUESTIONNAIRECOURSEEVAL || is_siteadmin($USER->id)) { // courseeval end
+            $mform->addElement('text', 'name', get_string('name', 'questionnaire'), array('size'=>'64'));
+            $mform->setType('name', PARAM_TEXT);
+            $mform->addRule('name', null, 'required', null, 'client');
+        } else {
+            $mform->addElement('header', 'name', $questionnaire->name);
+        } // Courseeval end
+        
         $this->add_intro_editor(false, get_string('summary', 'questionnaire'));
 
         $mform->addElement('header', 'timinghdr', get_string('timing', 'form'));
@@ -62,9 +76,16 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $questionnairerealms;
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
-        $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnairetypes);
-        $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
-
+        // only shows these form elements if its an empty form or qtype is set and its not 'course evaluation' or being accessed by the SITE ADMIN (implied $qtype = 'course evaluation')
+        if (empty($qtype) || $qtype <> 'course evaluation' || is_siteadmin($USER->id)) { // courseeval end
+            $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
+            if (!is_siteadmin($USER->id)) { // not going to allow a non-admin to create a course evaluation type
+                unset($QUESTIONNAIRE_TYPES[QUESTIONNAIRECOURSEEVAL]);
+            }
+            $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnaire_types);
+            $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
+        } //Courseeval end
+        
         $mform->addElement('hidden', 'cannotchangerespondenttype');
         $mform->setType('cannotchangerespondenttype', PARAM_INT);
         $mform->addElement('select', 'respondenttype', get_string('respondenttype', 'questionnaire'), $questionnairerespondents);
