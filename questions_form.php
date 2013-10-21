@@ -499,7 +499,15 @@ class questionnaire_edit_question_form extends moodleform {
             $mform->addGroup($reqgroup, 'reqgroup', get_string('required', 'questionnaire'), ' ', false);
             $mform->addHelpButton('reqgroup', 'required', 'questionnaire');
         }
-
+        // courseeval start
+        if (is_siteadmin($USER->id)) {
+            $noneditgroup = array();
+            $noneditgroup[] =& $mform->createElement('radio', 'noneditable', '', $stryes, 'y');
+            $noneditgroup[] =& $mform->createElement('radio', 'noneditable', '', $strno, 'n');
+            $mform->addGroup($noneditgroup, 'noneditgroup', get_string('noneditable', 'questionnaire'), ' ', false);
+            $mform->addHelpButton('noneditgroup', 'noneditable', 'questionnaire');
+        } // courseeval end
+        
         // Length field.
         if ($question->type_id == QUESYESNO || $question->type_id == QUESDROP || $question->type_id == QUESDATE ||
             $question->type_id == QUESSECTIONTEXT) {
