@@ -180,7 +180,8 @@ class questionnaire_question {
             $this->content = $question->content;
             $this->required = $question->required;
             $this->deleted = $question->deleted;
-
+            $this->noneditable = $question->noneditable;
+            
             $this->type_id = $question->type_id;
             $this->type = $qtypes[$this->type_id]->type;
             $this->response_table = $qtypes[$this->type_id]->response_table;
