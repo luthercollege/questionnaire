@@ -39,6 +39,7 @@ define ('QUESTIONNAIREONCE', 1);
 define ('QUESTIONNAIREDAILY', 2);
 define ('QUESTIONNAIREWEEKLY', 3);
 define ('QUESTIONNAIREMONTHLY', 4);
+define ('QUESTIONNAIRECOURSEEVAL', 5); // coursevals end
 
 define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_NEVER', 0);
 define ('QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENANSWERED', 1);
@@ -54,7 +55,8 @@ $questionnairetypes = array (QUESTIONNAIREUNLIMITED => get_string('qtypeunlimite
                               QUESTIONNAIREONCE => get_string('qtypeonce', 'questionnaire'),
                               QUESTIONNAIREDAILY => get_string('qtypedaily', 'questionnaire'),
                               QUESTIONNAIREWEEKLY => get_string('qtypeweekly', 'questionnaire'),
-                              QUESTIONNAIREMONTHLY => get_string('qtypemonthly', 'questionnaire'));
+                              QUESTIONNAIREMONTHLY => get_string('qtypemonthly', 'questionnaire'),
+                              QUESTIONNAIRECOURSEEVAL => get_string('qtypecourseeval', 'questionnaire')); // courseeval end
 
 global $questionnairerespondents;
 $questionnairerespondents = array ('fullname' => get_string('respondenttypefullname', 'questionnaire'),
