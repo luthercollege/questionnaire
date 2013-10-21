@@ -297,6 +297,10 @@ class questionnaire_questions_form extends moodleform {
             }
             $manageqgroup[] =& $mform->createElement('static', 'qtype_'.$question->id, '', $qtype);
             $manageqgroup[] =& $mform->createElement('static', 'qname_'.$question->id, '', $qname);
+            
+
+	        // courseeval added string
+	        $manageqgroup[] =& $mform->createElement('static', 'qnonedit'.$question->id, '', get_string('noneditable', 'questionnaire')); // courseeval end
 
             if ($dependency) {
                 $mform->addElement('static', 'qdepend_'.$question->id, '', '<div class="qdepend">'.$dependency.'</div>');
