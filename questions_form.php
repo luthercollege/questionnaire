@@ -220,11 +220,13 @@ class questionnaire_questions_form extends moodleform {
                         }
                     }
                 }
-                $manageqgroup[] =& $mform->createElement('image', 'movebutton['.$question->id.']',
-                                $msrc, $mextra);
-                $manageqgroup[] =& $mform->createElement('image', 'editbutton['.$question->id.']', $esrc, $eextra);
-                $manageqgroup[] =& $mform->createElement('image', 'removebutton['.$question->id.']', $rsrc, $rextra);
-
+                // courseeval start
+                if (!$question->noneditable || is_siteadmin($USER->id)) {
+	                $manageqgroup[] =& $mform->createElement('image', 'movebutton['.$question->id.']',
+	                                $msrc, $mextra);
+	                $manageqgroup[] =& $mform->createElement('image', 'editbutton['.$question->id.']', $esrc, $eextra);
+	                $manageqgroup[] =& $mform->createElement('image', 'removebutton['.$question->id.']', $rsrc, $rextra);
+            	} // courseeval end
                 if ($tid != QUESPAGEBREAK && $tid != QUESSECTIONTEXT) {
                     if ($required == 'y') {
                         $reqsrc = $OUTPUT->pix_url('t/stop');
