@@ -368,6 +368,9 @@ class questionnaire_edit_question_form extends moodleform {
     public function definition() {
         global $CFG, $COURSE, $questionnaire, $question, $questionnairerealms, $SESSION;
         global $DB;
+        
+        // courseeval start
+        global $USER; // courseeval end
 
         // The 'sticky' required response value for further new questions.
         if (isset($SESSION->questionnaire->required) && !isset($question->qid)) {
