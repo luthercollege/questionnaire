@@ -312,8 +312,7 @@ class questionnaire_questions_form extends moodleform {
                     $qnumber = '';
                 }
             }
-
-            if ($this->moveq && $pos < $moveqposition) {
+            if ($this->moveq && $pos < $moveqposition && ($question->noneditable == 'n' || is_siteadmin($USER->id))) {
                 $mform->addGroup($moveqgroup, 'moveqgroup', '', '', false);
             }
             if ($this->moveq) {
