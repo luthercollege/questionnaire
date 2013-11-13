@@ -82,7 +82,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
             if (!is_siteadmin($USER->id)) { // not going to allow a non-admin to create a course evaluation type
                 unset($QUESTIONNAIRE_TYPES[QUESTIONNAIRECOURSEEVAL]);
             }
-            $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $questionnaire_types);
+            $mform->addElement('select', 'qtype', get_string('qtype', 'questionnaire'), $QUESTIONNAIRE_TYPES);
             $mform->addHelpButton('qtype', 'qtype', 'questionnaire');
         } //Courseeval end
         
