@@ -1655,6 +1655,8 @@ class questionnaire {
                 $question->insert_response($rid);
             }
         }
+	    // hack: added for admissions
+        events_trigger('questionnaire_submitted', $record); // end of hack
         return($rid);
     }
 
