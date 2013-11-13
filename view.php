@@ -71,6 +71,10 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
+if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id)) { 
+	$PAGE->set_pagelayout('report');
+}
+
 $PAGE->set_title(format_string($questionnaire->name));
 
 $PAGE->set_heading(format_string($course->fullname));
@@ -151,7 +155,9 @@ if (isguestuser()) {
 
 $usernumresp = $questionnaire->count_submissions($USER->id);
 
-if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
+// course eval
+if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id)) { 
+} else if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) { // courseeval end
     echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide');
     $argstr = 'instance='.$questionnaire->id.'&user='.$USER->id;
     echo '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?'.
@@ -173,7 +179,10 @@ if (isset($SESSION->questionnaire->numselectedresps)) {
 } else {
     $numselectedresps = $numresp;
 }
-if ( ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) ||
+
+// course eval
+if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id)) { 
+} else if ( ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) ||
         $questionnaire->capabilities->readallresponses && ($numresp > 0) &&
            ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
             ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
