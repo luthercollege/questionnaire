@@ -178,6 +178,7 @@ $string['noanswer'] = 'No answer';
 $string['nodata'] = 'No data posted.';
 $string['noduplicates'] = 'No duplicate choices';
 $string['noneditable'] = 'Not editable'; // courseeval end
+$string['noneditable_help'] = 'Help for Not editable'; // courseeval end
 $string['noneinuse'] = 'This questionnaire does not contain any questions.';
 $string['non_respondents'] = 'Users who have not yet submitted their responses to this questionnaire';
 $string['nopublicsurveys'] = 'No public questionnaires.';
