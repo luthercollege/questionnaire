@@ -62,6 +62,9 @@ require_course_login($course, true, $cm);
 
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
+if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_siteadmin($USER->id)) {
+    redirect($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id);
+}
 // If you can't view the questionnaire, or can't view a specified response, error out.
 $context = context_module::instance($cm->id);
 if (!has_capability('mod/questionnaire:readallresponseanytime', $context) &&

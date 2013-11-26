@@ -71,10 +71,6 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
 
-if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id)) { 
-	$PAGE->set_pagelayout('report');
-}
-
 $PAGE->set_title(format_string($questionnaire->name));
 
 $PAGE->set_heading(format_string($course->fullname));

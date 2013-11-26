@@ -20,6 +20,8 @@ require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/questionnaire/settings_form.php');
 require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
+global $USER;
+
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $cancel = optional_param('cancel', '', PARAM_ALPHA);
 
@@ -67,7 +69,9 @@ $sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'ite
 
 $settingsform->set_data($sdata);
 
-if ($settings = $settingsform->get_data()) {
+if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_siteadmin($USER->id)) {
+    redirect($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id);
+} else if ($settings = $settingsform->get_data()) {
     $sdata = new Object();
     $sdata->id = $settings->sid;
     $sdata->name = $settings->name;
@@ -97,7 +101,7 @@ if ($settings = $settingsform->get_data()) {
         print_error('couldnotcreatenewsurvey', 'questionnaire');
     } else {
         redirect ($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id,
-                  get_string('settingssaved', 'questionnaire'));
+        get_string('settingssaved', 'questionnaire'));
     }
 } else if ($cancel) {
     redirect($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id);

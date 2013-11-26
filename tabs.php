@@ -44,7 +44,7 @@ if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnai
 }
 
 // courseeval start - disallow instructors from editing advanced settings of course evaluations
-if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id)) { //courseeval end
+if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_siteadmin($USER->id)) { //courseeval end
 } elseif ($questionnaire->capabilities->manage  && $owner) {
     $row[] = new tabobject('settings', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/qsettings.php?'.
             'id='.$questionnaire->cm->id), get_string('advancedsettings'));
@@ -99,9 +99,9 @@ if (isset($SESSION->questionnaire->currentsessiongroupid)) {
 }
 
 // courseeval start - disallow instructors from viewing results of course evaluations
-if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id) && $numresp > 0) {
-    $returnurl = curPageURL2();
-    $row[] = new tabobject('noreport', $returnurl, get_string('viewresponses', 'questionnaire', $numresp));
+if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_siteadmin($USER->id) && $numresp > 0) {
+//    $returnurl = curPageURL2();
+//    $row[] = new tabobject('noreport', $returnurl, get_string('viewresponses', 'questionnaire', $numresp));
 } elseif ($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) {
     $argstr = 'instance='.$questionnaire->id.'&sid='.$questionnaire->sid;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
@@ -227,7 +227,7 @@ if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id)
     }
 }
 
-if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id) && $numresp > 0) {
+if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_siteadmin($USER->id) && $numresp > 0) {
 } else if ($questionnaire->capabilities->viewsingleresponse) {
     $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id'=>$questionnaire->cm->id));
     $row[] = new tabobject('nonrespondents',
@@ -251,9 +251,10 @@ if ((count($row) > 1) || (!empty($row2) && (count($row2) > 1))) {
 }
 
 // courseeval start
+/*
 function curPageURL2() {
     $pageURL = 'http';
-    if ($_SERVER["HTTPS"] == "on") {
+    if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {
         $pageURL .= "s";
     }
     $pageURL .= "://";
@@ -264,3 +265,4 @@ function curPageURL2() {
     }
     return $pageURL;
 } // courseeval end
+*/
