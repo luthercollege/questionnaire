@@ -1641,6 +1641,7 @@ class questionnaire {
             $record->survey_id = $sid;
             $record->username = $userid;
             $rid = $DB->insert_record('questionnaire_response', $record);
+            $record->id = $rid; // hack for admissions
         } else {
             $record->id = $rid;
             $DB->update_record('questionnaire_response', $record);
