@@ -113,7 +113,8 @@ if ($groupmode == 1) {
 }
 $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
 
-if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
+if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_siteadmin($USER->id) && $numresp > 0) {
+} else if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
                 && $numresp > 0 && $owner && $numselectedresps > 0) {
     $argstr = 'instance='.$questionnaire->id;
     $row[] = new tabobject('allreport', $CFG->wwwroot.htmlspecialchars('/mod/questionnaire/report.php?'.
@@ -240,7 +241,8 @@ if (($canviewallgroups || ($canviewgroups && $questionnaire->capabilities->reada
     }
 }
 
-if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
+if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_siteadmin($USER->id) && $numresp > 0) {
+} else if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
     $nonrespondenturl = new moodle_url('/mod/questionnaire/show_nonrespondents.php', array('id' => $questionnaire->cm->id));
     $row[] = new tabobject('nonrespondents',
                     $nonrespondenturl->out(),

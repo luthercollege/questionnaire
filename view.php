@@ -202,7 +202,9 @@ if ($groupmode == 1) {
 }
 
 $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
-if (( (
+// course eval
+if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id)) { 
+} else if (( (
         // Teacher or non-editing teacher (if can view all groups).
         $canviewallgroups ||
         // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
