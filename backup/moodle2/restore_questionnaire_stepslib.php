@@ -108,7 +108,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
             // Dependchoice.
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields='type_id');
+            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields = 'type_id');
             if (is_object($dependquestion)) {
                 if ($dependquestion->type_id != 1) {
                     $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);
@@ -122,9 +122,20 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
     }
 
     protected function process_questionnaire_quest_choice($data) {
-        global $DB;
+        global $CFG, $DB;
 
         $data = (object)$data;
+
+        // Replace the = separator with :: separator in quest_choice content.
+        require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+
+        if (($data->value == null || $data->value == 'NULL') && !preg_match("/^([0-9]{1,3})=(.*)$/", $data->content)) {
+            $content = questionnaire_choice_values($data->content);
+            if ($pos = strpos($content->text, '=')) {
+                $data->content = str_replace('=', '::', $content->text);
+            }
+        }
+
         $oldid = $data->id;
         $data->question_id = $this->get_new_parentid('questionnaire_question');
 
@@ -134,7 +145,7 @@ class restore_questionnaire_activity_structure_step extends restore_activity_str
 
             // Dependchoice.
             // Only change mapping for RADIO and DROP question types, not for YESNO question.
-            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields='type_id');
+            $dependquestion = $DB->get_record('questionnaire_question', array('id' => $data->dependquestion), $fields = 'type_id');
             if (is_object($dependquestion)) {
                 if ($dependquestion->type_id != 1) {
                     $data->dependchoice = $this->get_mappingid('questionnaire_quest_choice', $data->dependchoice);

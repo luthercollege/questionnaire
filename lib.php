@@ -25,6 +25,8 @@ function questionnaire_supports($feature) {
             return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return false;
+        case FEATURE_COMPLETION_HAS_RULES:
+            return true;
         case FEATURE_GRADE_HAS_GRADE:
             return false;
         case FEATURE_GRADE_OUTCOMES:
@@ -205,7 +207,7 @@ function questionnaire_delete_instance($id) {
         }
     }
 
-    if ($events = $DB->get_records('event', array("modulename"=>'questionnaire', "instance"=>$questionnaire->id))) {
+    if ($events = $DB->get_records('event', array("modulename" => 'questionnaire', "instance" => $questionnaire->id))) {
         foreach ($events as $event) {
             delete_event($event->id);
         }
@@ -224,7 +226,7 @@ function questionnaire_user_outline($course, $user, $mod, $questionnaire) {
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
     $result = new stdClass();
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=true)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete = true)) {
         $n = count($responses);
         if ($n == 1) {
             $result->info = $n.' '.get_string("response", "questionnaire");
@@ -245,7 +247,7 @@ function questionnaire_user_complete($course, $user, $mod, $questionnaire) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/questionnaire/locallib.php');
 
-    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete=false)) {
+    if ($responses = questionnaire_get_user_responses($questionnaire->sid, $user->id, $complete = false)) {
         foreach ($responses as $response) {
             if ($response->complete == 'y') {
                 echo get_string('submitted', 'questionnaire').' '.userdate($response->submitted).'<br />';
@@ -376,9 +378,9 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
     }
 
     if ($questionnaire->cmidnumber != '') {
-        $params = array('itemname'=>$questionnaire->name, 'idnumber'=>$questionnaire->cmidnumber);
+        $params = array('itemname' => $questionnaire->name, 'idnumber' => $questionnaire->cmidnumber);
     } else {
-        $params = array('itemname'=>$questionnaire->name);
+        $params = array('itemname' => $questionnaire->name);
     }
 
     if ($questionnaire->grade > 0) {
@@ -398,7 +400,7 @@ function questionnaire_grade_item_update($questionnaire, $grades = null) {
         $params = null; // Allow text comments only.
     }
 
-    if ($grades  === 'reset') {
+    if ($grades === 'reset') {
         $params['reset'] = true;
         $grades = null;
     }
@@ -459,16 +461,16 @@ function questionnaire_pluginfile($course, $cm, $context, $filearea, $args, $for
     $componentid = (int)array_shift($args);
 
     if ($filearea != 'question') {
-        if (!$survey = $DB->get_record('questionnaire_survey', array('id'=>$componentid))) {
+        if (!$survey = $DB->get_record('questionnaire_survey', array('id' => $componentid))) {
             return false;
         }
     } else {
-        if (!$question = $DB->get_record('questionnaire_question', array('id'=>$componentid))) {
+        if (!$question = $DB->get_record('questionnaire_question', array('id' => $componentid))) {
             return false;
         }
     }
 
-    if (!$questionnaire = $DB->get_record('questionnaire', array('id'=>$cm->instance))) {
+    if (!$questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance))) {
         return false;
     }
 
@@ -492,6 +494,10 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         navigation_node $questionnairenode) {
 
     global $PAGE, $DB, $USER, $CFG;
+    $individualresponse = optional_param('individualresponse', false, PARAM_INT);
+    $rid = optional_param('rid', false, PARAM_INT); // Response id.
+    $currentgroupid = optional_param('group', 0, PARAM_INT); // Group id.
+
     require_once($CFG->dirroot.'/mod/questionnaire/questionnaire.class.php');
 
     $context = $PAGE->cm->context;
@@ -505,6 +511,7 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 
     $courseid = $course->id;
     $questionnaire = new questionnaire(0, $questionnaire, $course, $cm);
+
     if ($survey = $DB->get_record('questionnaire_survey', array('id' => $questionnaire->sid))) {
         $owner = (trim($survey->owner) == trim($courseid));
     } else {
@@ -562,21 +569,39 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
 
     if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
         $url = '/mod/questionnaire/myreport.php';
-        $node = navigation_node::create(get_string('yourresponses', 'questionnaire'),
-                new moodle_url($url, array('instance' => $questionnaire->id,
-                                'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')),
-                navigation_node::TYPE_SETTING, null, 'yourresponses');
-        $myreportnode = $questionnairenode->add_node($node, $beforekey);
 
-        $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/myreport.php',
-                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')));
-        $byresponsenode = $myreportnode->add(get_string('viewbyresponse', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/myreport.php',
-                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')));
-        $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
-                new moodle_url('/mod/questionnaire/myreport.php',
-                        array('instance' => $questionnaire->id, 'userid' => $USER->id, 'byresponse' => 0, 'action' => 'vall')));
+        if ($usernumresp > 1) {
+            $node = navigation_node::create(get_string('yourresponses', 'questionnaire'),
+                    new moodle_url($url, array('instance' => $questionnaire->id,
+                                    'userid' => $USER->id, 'byresponse' => 0, 'action' => 'summary')),
+                    navigation_node::TYPE_SETTING, null, 'yourresponses');
+            $myreportnode = $questionnairenode->add_node($node, $beforekey);
+
+            $summary = $myreportnode->add(get_string('summary', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/myreport.php',
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id,
+                                            'byresponse' => 0, 'action' => 'summary')));
+            $byresponsenode = $myreportnode->add(get_string('viewbyresponse', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/myreport.php',
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id,
+                                            'byresponse' => 1, 'action' => 'vresp')));
+            $allmyresponsesnode = $myreportnode->add(get_string('myresponses', 'questionnaire'),
+                    new moodle_url('/mod/questionnaire/myreport.php',
+                            array('instance' => $questionnaire->id, 'userid' => $USER->id,
+                                            'byresponse' => 0, 'action' => 'vall')));
+            if ($questionnaire->capabilities->downloadresponses) {
+                $downloadmyresponsesnode = $myreportnode->add(get_string('downloadtext'),
+                        new moodle_url('/mod/questionnaire/report.php',
+                            array('instance' => $questionnaire->id, 'user' => $USER->id,
+                                            'action' => 'dwnpg', 'group' => $currentgroupid)));
+            }
+        } else {
+            $node = navigation_node::create(get_string('yourresponse', 'questionnaire'),
+                            new moodle_url($url, array('instance' => $questionnaire->id,
+                                            'userid' => $USER->id, 'byresponse' => 1, 'action' => 'vresp')),
+                            navigation_node::TYPE_SETTING, null, 'yourresponse');
+            $myreportnode = $questionnairenode->add_node($node, $beforekey);
+        }
     }
 
     $numresp = $questionnaire->count_submissions();
@@ -587,8 +612,21 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         $numselectedresps = $numresp;
     }
 
-    if (($questionnaire->capabilities->readallresponseanytime && $numresp > 0 && $owner && $numselectedresps > 0) ||
-            $questionnaire->capabilities->readallresponses && ($numresp > 0) &&
+    // If questionnaire is set to separate groups, prevent user who is not member of any group
+    // and is not a non-editing teacher to view All responses.
+    $canviewgroups = true;
+    $groupmode = groups_get_activity_groupmode($cm, $course);
+    if ($groupmode == 1) {
+        $canviewgroups = groups_has_membership($cm, $USER->id);
+    }
+    $canviewallgroups = has_capability('moodle/site:accessallgroups', $context);
+    if (( (
+            // Teacher or non-editing teacher (if can view all groups).
+            $canviewallgroups ||
+            // Non-editing teacher (with canviewallgroups capability removed), if member of a group.
+            ($canviewgroups && $questionnaire->capabilities->readallresponseanytime))
+            && $numresp > 0 && $owner && $numselectedresps > 0) ||
+            $questionnaire->capabilities->readallresponses && ($numresp > 0) && $canviewgroups &&
             ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_ALWAYS ||
                     ($questionnaire->resp_view == QUESTIONNAIRE_STUDENTVIEWRESPONSES_WHENCLOSED
                             && $questionnaire->is_closed()) ||
@@ -611,32 +649,43 @@ function questionnaire_extend_settings_navigation(settings_navigation $settings,
         }
         $defaultordernode = $summarynode->add(get_string('order_default', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
-                        array('instance' => $questionnaire->id, 'action' => 'vall')));
+                        array('instance' => $questionnaire->id, 'action' => 'vall', 'group' => $currentgroupid)));
         $ascendingordernode = $summarynode->add(get_string('order_ascending', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
-                        array('instance' => $questionnaire->id, 'action' => 'vallasort')));
+                        array('instance' => $questionnaire->id, 'action' => 'vallasort', 'group' => $currentgroupid)));
         $descendingordernode = $summarynode->add(get_string('order_descending', 'questionnaire'),
                 new moodle_url('/mod/questionnaire/report.php',
-                        array('instance' => $questionnaire->id, 'action' => 'vallarsort')));
+                        array('instance' => $questionnaire->id, 'action' => 'vallarsort', 'group' => $currentgroupid)));
 
         if ($questionnaire->capabilities->deleteresponses) {
             $deleteallnode = $summarynode->add(get_string('deleteallresponses', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
-                            array('instance' => $questionnaire->id, 'action' => 'delallresp')));
+                            array('instance' => $questionnaire->id, 'action' => 'delallresp', 'group' => $currentgroupid)));
         }
 
         if ($questionnaire->capabilities->downloadresponses) {
             $downloadresponsesnode = $summarynode->add(get_string('downloadtextformat', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
-                            array('instance' => $questionnaire->id, 'action' => 'dwnpg')));
+                            array('instance' => $questionnaire->id, 'action' => 'dwnpg', 'group' => $currentgroupid)));
         }
         if ($questionnaire->capabilities->viewsingleresponse && $questionnaire->respondenttype != 'anonymous') {
             $byresponsenode = $reportnode->add(get_string('viewbyresponse', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/report.php',
+                    array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
+
+            $viewindividualresponsenode = $byresponsenode->add(get_string('view', 'questionnaire'),
+                new moodle_url('/mod/questionnaire/report.php',
+                    array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1, 'group' => $currentgroupid)));
+
+            if ($individualresponse) {
+                $deleteindividualresponsenode = $byresponsenode->add(get_string('deleteresp', 'questionnaire'),
                     new moodle_url('/mod/questionnaire/report.php',
-                            array('instance' => $questionnaire->id, 'action' => 'vresp', 'byresponse' => 1)));
+                        array('instance' => $questionnaire->id, 'action' => 'dresp', 'byresponse' => 1,
+                            'rid' => $rid, 'group' => $currentgroupid, 'individualresponse' => 1)));
+            }
         }
     }
-    if ($questionnaire->capabilities->viewsingleresponse) {
+    if ($questionnaire->capabilities->viewsingleresponse && ($canviewallgroups || $canviewgroups)) {
         $url = '/mod/questionnaire/show_nonrespondents.php';
         $node = navigation_node::create(get_string('show_nonrespondents', 'questionnaire'),
                 new moodle_url($url, array('id' => $cmid)),
@@ -728,7 +777,7 @@ function questionnaire_print_overview($courses, &$htmlarray) {
             $context = context_module::instance($cm->id);
             $qobject = new questionnaire($questionnaire->id, $questionnaire, $questionnaire->course, $cm);
             $isclosed = $qobject->is_closed();
-            $answered =  !$qobject->user_can_take($USER->id);
+            $answered = !$qobject->user_can_take($USER->id);
             $count = $new[$questionnaire->id]->count;
 
             if ($count > 0  &&
@@ -802,7 +851,7 @@ function questionnaire_reset_userdata($data) {
     $status = array();
 
     if (!empty($data->reset_questionnaire)) {
-        $surveys = questionnaire_get_survey_list($data->courseid, $type='');
+        $surveys = questionnaire_get_survey_list($data->courseid, $type = '');
 
         // Delete responses.
         foreach ($surveys as $survey) {
@@ -813,8 +862,10 @@ function questionnaire_reset_userdata($data) {
                  ORDER BY R.id";
             $resps = $DB->get_records_sql($sql, array($survey->id));
             if (!empty($resps)) {
+                $questionnaire = $DB->get_record("questionnaire", array("sid" => $survey->id));
+                $questionnaire->course = $DB->get_record("course", array("id" => $questionnaire->course));
                 foreach ($resps as $response) {
-                    questionnaire_delete_response($response->id);
+                    questionnaire_delete_response($response, $questionnaire);
                 }
             }
             // Remove this questionnaire's grades (and feedback) from gradebook (if any).
@@ -837,4 +888,30 @@ function questionnaire_reset_userdata($data) {
                         'error' => false);
     }
     return $status;
+}
+
+/**
+ * Obtains the automatic completion state for this questionnaire based on the condition
+ * in questionnaire settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function questionnaire_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG, $DB;
+
+    // Get questionnaire details.
+    $questionnaire = $DB->get_record('questionnaire', array('id' => $cm->instance), '*', MUST_EXIST);
+
+    // If completion option is enabled, evaluate it and return true/false.
+    if ($questionnaire->completionsubmit) {
+        $params = array('userid' => $userid, 'qid' => $questionnaire->id);
+        return $DB->record_exists('questionnaire_attempts', $params);
+    } else {
+        // Completion option is not enabled so just return $type.
+        return $type;
+    }
 }

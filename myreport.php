@@ -32,6 +32,7 @@ $userid = optional_param('user', $USER->id, PARAM_INT);
 $rid = optional_param('rid', null, PARAM_INT);
 $byresponse = optional_param('byresponse', 0, PARAM_INT);
 $action = optional_param('action', 'summary', PARAM_RAW);
+$currentgroupid = optional_param('group', 0, PARAM_INT); // Groupid.
 
 if (! $questionnaire = $DB->get_record("questionnaire", array("id" => $instance))) {
     print_error('incorrectquestionnaire', 'questionnaire');
@@ -50,7 +51,7 @@ if ( !has_capability('mod/questionnaire:readownresponses', $context)
     || $userid != $USER->id) {
     print_error('Permission denied');
 }
-$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance'=>$instance));
+$url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/myreport.php', array('instance' => $instance));
 if (isset($userid)) {
     $url->param('userid', $userid);
 }
@@ -84,7 +85,11 @@ switch ($action) {
             $resps = array();
         }
         $rids = array_keys($resps);
-        $titletext = get_string('myresponsetitle', 'questionnaire', count($resps));
+        if (count($resps) > 1) {
+            $titletext = get_string('myresponsetitle', 'questionnaire', count($resps));
+        } else {
+            $titletext = get_string('yourresponse', 'questionnaire');
+        }
 
         // Print the page header.
         echo $OUTPUT->header();
@@ -108,7 +113,8 @@ switch ($action) {
         }
         $SESSION->questionnaire->current_tab = 'myvall';
         $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
-        $resps = $DB->get_records_select('questionnaire_response', $select);
+        $sort = 'submitted ASC';
+        $resps = $DB->get_records_select('questionnaire_response', $select, $params = null, $sort);
         $titletext = get_string('myresponses', 'questionnaire');
 
         // Print the page header.
@@ -131,14 +137,19 @@ switch ($action) {
         }
         $SESSION->questionnaire->current_tab = 'mybyresponse';
         $select = 'survey_id = '.$questionnaire->sid.' AND username = \''.$userid.'\' AND complete=\'y\'';
-        $resps = $DB->get_records_select('questionnaire_response', $select);
+        $sort = 'submitted ASC';
+        $resps = $DB->get_records_select('questionnaire_response', $select, $params = null, $sort);
         $rids = array_keys($resps);
+
+        // If more than one response for this respondent, display most recent response.
         if (!$rid) {
-            $rid = $rids[0];
+            $rid = end($rids);
         }
-        if ($rid) {
-            $numresp = $questionnaire->count_submissions($USER->id);
+        $numresp = count($rids);
+        if ($numresp > 1) {
             $titletext = get_string('myresponsetitle', 'questionnaire', $numresp);
+        } else {
+            $titletext = get_string('yourresponse', 'questionnaire');
         }
 
         // Print the page header.
@@ -146,6 +157,8 @@ switch ($action) {
 
         // Print the tabs.
         include('tabs.php');
+        echo $OUTPUT->box_start();
+
         echo $OUTPUT->heading($titletext);
 
         if (count($resps) > 1) {
@@ -159,7 +172,7 @@ switch ($action) {
             $questionnaire->survey_results_navbar_student ($rid, $userid, $instance, $resps);
             echo '</div>';
         }
-
+        echo $OUTPUT->box_end();
         // Finish the page.
         echo $OUTPUT->footer($course);
         break;

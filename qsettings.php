@@ -24,6 +24,7 @@ global $USER;
 
 $id = required_param('id', PARAM_INT);    // Course module ID.
 $cancel = optional_param('cancel', '', PARAM_ALPHA);
+$submitbutton2 = optional_param('submitbutton2', '', PARAM_ALPHA);
 
 if (! $cm = get_coursemodule_from_id('questionnaire', $id)) {
     print_error('invalidcoursemodule');
@@ -59,13 +60,13 @@ $sdata->id = $cm->id;
 
 $draftideditor = file_get_submitted_draft_itemid('info');
 $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'info',
-                $sdata->sid, array('subdirs'=>true), $questionnaire->survey->info);
-$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                $sdata->sid, array('subdirs' => true), $questionnaire->survey->info);
+$sdata->info = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
 
 $draftideditor = file_get_submitted_draft_itemid('thankbody');
 $currentinfo = file_prepare_draft_area($draftideditor, $context->id, 'mod_questionnaire', 'thankbody',
-                $sdata->sid, array('subdirs'=>true), $questionnaire->survey->thank_body);
-$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid'=>$draftideditor);
+                $sdata->sid, array('subdirs' => true), $questionnaire->survey->thank_body);
+$sdata->thank_body = array('text' => $currentinfo, 'format' => FORMAT_HTML, 'itemid' => $draftideditor);
 
 $settingsform->set_data($sdata);
 
@@ -83,7 +84,7 @@ if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_sit
     $sdata->infoformat = $settings->info['format'];
     $sdata->info       = $settings->info['text'];
     $sdata->info       = file_save_draft_area_files($sdata->infoitemid, $context->id, 'mod_questionnaire', 'info',
-                                                    $sdata->id, array('subdirs'=>true), $sdata->info);
+                                                    $sdata->id, array('subdirs' => true), $sdata->info);
 
     $sdata->theme = ''; // Deprecated theme field.
     $sdata->thanks_page = $settings->thanks_page;
@@ -93,15 +94,19 @@ if ($questionnairetypes[$questionnaire->qtype] == 'course evaluation' && !is_sit
     $sdata->thankformat = $settings->thank_body['format'];
     $sdata->thank_body  = $settings->thank_body['text'];
     $sdata->thank_body  = file_save_draft_area_files($sdata->thankitemid, $context->id, 'mod_questionnaire', 'thankbody',
-                                                     $sdata->id, array('subdirs'=>true), $sdata->thank_body);
+                                                     $sdata->id, array('subdirs' => true), $sdata->thank_body);
 
     $sdata->email = $settings->email;
     $sdata->owner = $settings->owner;
     if (!($sid = $questionnaire->survey_update($sdata))) {
         print_error('couldnotcreatenewsurvey', 'questionnaire');
     } else {
-        redirect ($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id,
-        get_string('settingssaved', 'questionnaire'));
+        if ($submitbutton2) {
+            $redirecturl = course_get_url($cm->course);
+        } else {
+            $redirecturl = $CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id;
+        }
+        redirect ($redirecturl);
     }
 } else if ($cancel) {
     redirect($CFG->wwwroot.'/mod/questionnaire/view.php?id='.$questionnaire->cm->id);

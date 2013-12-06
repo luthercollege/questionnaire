@@ -387,8 +387,44 @@ function xmldb_questionnaire_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
+        // Replace the = separator with :: separator in quest_choice content.
+        require_once($CFG->dirroot.'/mod/questionnaire/locallib.php');
+        $choices = $DB->get_records('questionnaire_quest_choice', $conditions = null);
+        $total = count($choices);
+        if ($total > 0) {
+            $pbar = new progress_bar('convertchoicevalues', 500, true);
+            $i = 1;
+            foreach ($choices as $choice) {
+                if (($choice->value == null || $choice->value == 'NULL') &&
+                                !preg_match("/^([0-9]{1,3})=(.*)$/", $choice->content)) {
+                    $content = questionnaire_choice_values($choice->content);
+                    if ($pos = strpos($content->text, '=')) {
+                        $newcontent = str_replace('=', '::', $content->text);
+                        $choice->content = $newcontent;
+                        $DB->update_record('questionnaire_quest_choice', $choice);
+                    }
+                }
+                $pbar->update($i, $total, "Convert questionnaire choice value separator - $i/$total.");
+                $i++;
+            }
+        }
+
         // Questionnaire savepoint reached.
         upgrade_mod_savepoint(true, 2013062501, 'questionnaire');
+    }
+
+    if ($oldversion < 2013100500) {
+        // Add autonumbering option for questions and pages.
+        $table = new xmldb_table('questionnaire');
+        $field = new xmldb_field('autonum', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '3', 'completionsubmit');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Questionnaire savepoint reached.
+        upgrade_mod_savepoint(true, 2013100500, 'questionnaire');
     }
 
     return $result;

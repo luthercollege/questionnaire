@@ -73,7 +73,7 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addHelpButton('enableclosegroup', 'closedate', 'questionnaire');
         $mform->disabledIf('enableclosegroup', 'useclosedate', 'notchecked');
 
-        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $questionnairerealms;
+        global $questionnairetypes, $questionnairerespondents, $questionnaireresponseviewers, $questionnairerealms, $autonumbering;
         $mform->addElement('header', 'questionnairehdr', get_string('responseoptions', 'questionnaire'));
 
         // only shows these form elements if its an empty form or qtype is set and its not 'course evaluation' or being accessed by the SITE ADMIN (implied $qtype = 'course evaluation')
@@ -95,17 +95,22 @@ class mod_questionnaire_mod_form extends moodleform_mod {
         $mform->addElement('select', 'resp_view', get_string('responseview', 'questionnaire'), $questionnaireresponseviewers);
         $mform->addHelpButton('resp_view', 'responseview', 'questionnaire');
 
-        $options = array('0'=>get_string('no'), '1'=>get_string('yes'));
+        $options = array('0' => get_string('no'), '1' => get_string('yes'));
         $mform->addElement('select', 'resume', get_string('resume', 'questionnaire'), $options);
         $mform->addHelpButton('resume', 'resume', 'questionnaire');
 
-        $options = array('0'=>get_string('no'), '1'=>get_string('yes'));
+        $options = array('0' => get_string('no'), '1' => get_string('yes'));
         $mform->addElement('select', 'navigate', get_string('navigate', 'questionnaire'), $options);
         $mform->addHelpButton('navigate', 'navigate', 'questionnaire');
 
+        $mform->addElement('select', 'autonum', get_string('autonumbering', 'questionnaire'), $autonumbering);
+        $mform->addHelpButton('autonum', 'autonumbering', 'questionnaire');
+        // Default = autonumber both questions and pages.
+        $mform->setDefault('autonum', 3);
+
         // Removed potential scales from list of grades. CONTRIB-3167.
         $grades[0] = get_string('nograde');
-        for ($i=100; $i>=1; $i--) {
+        for ($i = 100; $i >= 1; $i--) {
             $grades[$i] = $i;
         }
         $mform->addElement('select', 'grade', get_string('grade', 'questionnaire'), $grades);

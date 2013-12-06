@@ -173,10 +173,6 @@ td.selected {
     display:inline;
 }
 
-#page-mod-questionnaire-report .generaltable,
-#page-mod-questionnaire-myreport .generaltable {
-    margin-left: 45px;
-}
 .floatprinticon {
     margin-top:-30px;
     float:right;
@@ -187,7 +183,7 @@ td.selected {
      font-size:inherit;
      width: auto;
 }
- 
+
 /* format paragraph top and bottom margins for better vertical positioning in questions text */
 .qn-question p {
     margin-bottom: 0.6em;
@@ -238,19 +234,20 @@ td.selected {
 .qn-info {
     float: left;
     width: auto;
-    padding: 7px; 
+    padding: 7px;
     background: #eee;
     font-weight: bold;
 }
 
 .qn-info h2.qn-number {
     margin: 0px;
+    font-size: 1.5em;
+    line-height: 1.2em;
 }
 
 .qn-question,
 .qn-answer {
     margin: 0 0 0.5em;
-    margin-left: 45px;
     overflow:auto;
 }
 
@@ -270,6 +267,7 @@ td.selected {
 
 .qn-content {
     margin-bottom: 10px;
+    margin-left: 55px;
 }
 
 /* move horizontal radio buttons closer to their labels */
@@ -277,7 +275,7 @@ td.selected {
 .qn-answer input[type="checkbox"] {
     margin-right: 3px;
 }
-    
+
 .qn-answer label {
     margin-right: 0.6em;
 }

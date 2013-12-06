@@ -54,19 +54,30 @@ function depend (children, choices) {
 			for (var k = 0; k < choiceslength; k++) {
 	            choice = choices[k];
 				if (child == choice) {
-					q.classList.add('qn-container');
+					// If this browser version accepts classList.
+					if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
+						q.classList.add('qn-container');
+                    // If this browser version DOES NOT accept classList (e.g. MSIE < 10)
+					} else {
+						addClass(q, 'qn-container');
+					}
 					for (var j = 0; j < radiolength; j++) {
 						radio = radios[j];
-						radio.disabled=false ;
+						radio.disabled=false;
 					}
 					for (var m = 0; m < droplistlength; m++) {
 						droplist = droplists[m];
-						droplist.disabled=false ;
+						droplist.disabled=false;
 					}
 					delete children[i];
 				} else if (children[i]){
-					q.classList.remove('qn-container');
-                    q.classList.add('hidedependquestion');
+					if (typeof document !== "undefined" && ("classList" in document.createElement("a"))) {
+					    q.classList.remove('qn-container');
+                        q.classList.add('hidedependquestion');
+					} else {
+						removeClass(q, 'qn-container');
+					}
+                    addClass(q, 'hidedependquestion');
 					for (var j = 0; j < radiolength; j++) {
 						radio = radios[j];
 						radio.disabled=true;
@@ -90,7 +101,24 @@ function depend (children, choices) {
 }
 // End conditional branching functions.
 
-// When respondent enters text in !other field, corresponding 
+/*
+ * A workaround for MSIE versions < 10 which do not recognize classList. Answer by Paulpro at:
+ * http://stackoverflow.com/questions/6787383/what-is-the-solution-to-remove-add-a-class-in-pure-javascript.
+ * */
+
+function addClass(el, aclass){
+    el.className += ' '+aclass;
+}
+
+function removeClass(el, aclass){
+    var elClass = ' '+el.className+' ';
+    while(elClass.indexOf(' '+aclass+' ') != -1)
+         elClass = elClass.replace(' '+aclass+' ', '');
+    el.className = elClass;
+}
+// End classList workaround.
+
+// When respondent enters text in !other field, corresponding
 // radio button OR check box is automatically checked.
 function other_check(name) {
   other = name.split("_");
@@ -163,7 +191,6 @@ function checkbox_empty(name) {
 M.mod_questionnaire = M.mod_questionnaire || {};
 
 M.mod_questionnaire.init_attempt_form = function(Y) {
-    M.core_question_engine.init_form(Y, '#phpesp_response');
     M.core_formchangechecker.init({formid: 'phpesp_response'});
 };
 
@@ -201,4 +228,3 @@ M.mod_questionnaire.init_sendmessage = function(Y) {
     }, '#checkstarted');
 
 };
-
