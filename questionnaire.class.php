@@ -604,7 +604,7 @@ class questionnaire {
             if ($caninsertresponse) {
                 $formdata->rid = $this->response_insert($this->survey->id, $formdata->sec, $formdata->rid, $quser);
                 // Prevent navigation to previous page if required questions are empty or not correct (and NOT skip logic mode).
-                $msg = $this->response_check_format($formdata->sec, $formdata);
+//                $msg = $this->response_check_format($formdata->sec, $formdata); // commented out to allow going back when skip logic in place without answering required questions
             }
             if ( $msg ) {
                 $formdata->prev = '';

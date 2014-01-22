@@ -663,4 +663,5 @@ if ($questionnaire->qtype == QUESTIONNAIRECOURSEEVAL && !is_siteadmin($USER->id)
 			// Finish the page.
 			echo $OUTPUT->footer($course);
 			break;
+	}
 }
